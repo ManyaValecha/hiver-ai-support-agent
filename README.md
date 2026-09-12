@@ -1,6 +1,6 @@
 # 🤖 Hiver AI Support Agent — AppleSupport
 
-> **Built for the Hiver AI Challenge.** A production-ready AI support agent trained on real customer–brand Twitter conversations that classifies intent, routes tickets intelligently, and drafts contextually grounded replies — with a full evaluation harness to prove it works.
+> **Built for the Hiver AI Challenge.** A production-ready AI support agent trained on real customer–brand Twitter conversations that classifies intent, routes tickets intelligently, and drafts contextually grounded replies  with a full evaluation harness to prove it works.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://hiver-ai-support-agent-olive.vercel.app)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://python.org)
@@ -14,7 +14,7 @@
 
 This project answers the core challenge question:
 
-> *"Can you turn a messy real-world dataset into a working AI system — and prove it works?"*
+> *"Can you turn a messy real-world dataset into a working AI system  and prove it works?"*
 
 For every incoming customer message, the agent:
 
@@ -22,7 +22,7 @@ For every incoming customer message, the agent:
 |------|-------------|
 | **1. Classify Intent** | Assigns one of 7 fine-grained intents using TF-IDF + Logistic Regression trained on curated AppleSupport Twitter data |
 | **2. Route Decision** | Decides **Auto-handle** or **Escalate** using a rule system combining confidence thresholds, urgency detection, and intent sensitivity |
-| **3. Draft Reply** | Retrieves the most semantically similar historical brand reply using cosine similarity — grounded in real AppleSupport language |
+| **3. Draft Reply** | Retrieves the most semantically similar historical brand reply using cosine similarity  grounded in real AppleSupport language |
 
 ---
 
@@ -103,12 +103,12 @@ Evaluated against the 294-sample golden dataset (in-distribution, upper-bound te
 | **Routing Accuracy** | **90.7%** | vs. trivial "always escalate" baseline of 44.0% |
 | **Avg Reply Score** | **2.67 / 5** | Heuristic similarity score (LLM judge optional via `OPENAI_API_KEY`) |
 | **Training samples** | 294 | 7 intents, ~42 samples/intent |
-| **Baseline (trivial)** | 44.0% | Always escalates — the floor we must beat |
+| **Baseline (trivial)** | 44.0% | Always escalates the floor we must beat |
 
-> **⚠️ Honest Caveat:** Intent accuracy of 100% is on the training set — no held-out test split. This is intentional for a demo with 294 samples; the model generalises well within-domain but would need a larger dataset for robust OOD evaluation. The evaluation harness (`evaluate.py`) supports a proper train/test split for production use.
+> **⚠️ Honest Caveat:** Intent accuracy of 100% is on the training set no held-out test split. This is intentional for a demo with 294 samples; the model generalises well within-domain but would need a larger dataset for robust OOD evaluation. The evaluation harness (`evaluate.py`) supports a proper train/test split for production use.
 
 **Top failure modes** (from `metrics.json`):
-- `software_bug` predicted as `Auto-handle` when the dataset labelled it `Escalate` — routing disagreement, not intent error
+- `software_bug` predicted as `Auto-handle` when the dataset labelled it `Escalate`  routing disagreement, not intent error
 - Indicates the rule system is slightly more conservative than the dataset labels
 
 ---
@@ -169,7 +169,7 @@ The agent is deployed on Vercel at:
 - *"My iPhone battery drains completely by noon since the iOS 17 update"*
 - *"I was charged twice for Apple Music and I need a refund immediately!"*
 - *"Tracking says delivered but I never received my MacBook package"*
-- *"I accidentally deleted all my photos — can I recover them?"*
+- *"I accidentally deleted all my photos  can I recover them?"*
 - *"AirDrop stopped working between my iPhone and MacBook"*
 
 ---

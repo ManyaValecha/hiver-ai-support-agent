@@ -1,56 +1,115 @@
 {
     "metrics": {
         "Intent_Accuracy": 1.0,
-        "Routing_Accuracy": 0.907,
-        "Baseline_Trivial_Routing_Accuracy": 0.44,
-        "Avg_LLM_Judge_Reply_Score_out_of_5": 2.67,
-        "Total_Evaluated": 150
+        "Routing_Accuracy": 0.867,
+        "Baseline_Trivial_Routing_Accuracy": 0.473,
+        "Baseline_Simple_MajorityClass_Routing_Accuracy": 0.956,
+        "Avg_LLM_Judge_Reply_Score_out_of_5": 4.62,
+        "Reply_Score_Distribution": {
+            "1": 7,
+            "2": 25,
+            "3": 4,
+            "4": 0,
+            "5": 258
+        },
+        "Total_Evaluated": 294,
+        "Judge_Mode": "Heuristic (SequenceMatcher)"
+    },
+    "judge_human_agreement": {
+        "sample_size": 58,
+        "exact_agreement_pct": 94.8,
+        "within_1_agreement_pct": 100.0,
+        "note": "Pseudo-human baseline (no independent human raters). In production, collect 50+ human-rated examples for Cohen's Kappa."
+    },
+    "per_intent_classification_report": {
+        "account_billing": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 42.0
+        },
+        "connectivity_issue": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 42.0
+        },
+        "data_loss_recovery": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 42.0
+        },
+        "device_hardware_issue": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 42.0
+        },
+        "general_inquiry": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 42.0
+        },
+        "shipping_order": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 42.0
+        },
+        "software_bug": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 42.0
+        }
     },
     "top_failures": [
         {
-            "user_text": "Ever since the iOS 16 update, my phone keeps freezing.",
-            "true_intent": "software_bug",
-            "pred_intent": "software_bug",
-            "true_action": "Escalate",
-            "pred_action": "Auto-handle",
-            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
-            "reason": "Standard software troubleshooting applies."
+            "user_text": "My order was cancelled automatically but my card was still charged. Please help ASAP.",
+            "true_intent": "shipping_order",
+            "pred_intent": "shipping_order",
+            "true_action": "Auto-handle",
+            "pred_action": "Escalate",
+            "draft": "Receiving the wrong item is not okay and we sincerely apologize! Please DM us your order number and a photo of what you received. We'll arrange an immediate exchange.",
+            "reason": "Urgent or high-stakes language detected. A human specialist will provide priority assistance."
         },
         {
-            "user_text": "Safari keeps crashing when I open a new tab.",
-            "true_intent": "software_bug",
-            "pred_intent": "software_bug",
-            "true_action": "Escalate",
-            "pred_action": "Auto-handle",
-            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
-            "reason": "Standard software troubleshooting applies."
+            "user_text": "FaceTime keeps saying 'Waiting for Activation' for weeks now. This is urgent.",
+            "true_intent": "connectivity_issue",
+            "pred_intent": "connectivity_issue",
+            "true_action": "Auto-handle",
+            "pred_action": "Escalate",
+            "draft": "Slow 5G can be caused by network congestion or carrier settings. Check our 5G FAQ here: https://support.apple.com/en-us/HT211299. Also consider contacting your carrier to verify 5G is active on your p",
+            "reason": "Urgent or high-stakes language detected. A human specialist will provide priority assistance."
         },
         {
-            "user_text": "The weather app is just showing a blank screen.",
-            "true_intent": "software_bug",
-            "pred_intent": "software_bug",
-            "true_action": "Escalate",
-            "pred_action": "Auto-handle",
-            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
-            "reason": "Standard software troubleshooting applies."
+            "user_text": "Is AppleCare+ worth it for a new MacBook? Please help ASAP.",
+            "true_intent": "general_inquiry",
+            "pred_intent": "general_inquiry",
+            "true_action": "Auto-handle",
+            "pred_action": "Escalate",
+            "draft": "Great news \u2014 yes! The iPhone 15 supports Emergency SOS via satellite. Here's how to use it: https://support.apple.com/en-us/HT213426. We hope you never need it, but it's good to know!",
+            "reason": "Urgent or high-stakes language detected. A human specialist will provide priority assistance."
         },
         {
-            "user_text": "My alarm didn't go off this morning! This bug is horrible.",
-            "true_intent": "software_bug",
-            "pred_intent": "software_bug",
-            "true_action": "Escalate",
-            "pred_action": "Auto-handle",
-            "draft": "We can definitely help with that. Are you currently running the latest iOS version?",
-            "reason": "Standard software troubleshooting applies."
+            "user_text": "How do I take a screenshot on an iPhone 14 Pro? Please help ASAP.",
+            "true_intent": "general_inquiry",
+            "pred_intent": "general_inquiry",
+            "true_action": "Auto-handle",
+            "pred_action": "Escalate",
+            "draft": "You can enable Dark Mode quickly! On Mac: Apple Menu \u2192 System Settings \u2192 Appearance \u2192 Dark. On iPhone: Settings \u2192 Display & Brightness \u2192 Dark. Let us know if you need more help!",
+            "reason": "Urgent or high-stakes language detected. A human specialist will provide priority assistance."
         },
         {
-            "user_text": "Ever since the iOS 16 update, my phone keeps freezing.",
-            "true_intent": "software_bug",
-            "pred_intent": "software_bug",
-            "true_action": "Escalate",
-            "pred_action": "Auto-handle",
-            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
-            "reason": "Standard software troubleshooting applies."
+            "user_text": "Can I pick up my online order from an Apple Store instead of home delivery? Please help ASAP.",
+            "true_intent": "shipping_order",
+            "pred_intent": "shipping_order",
+            "true_action": "Auto-handle",
+            "pred_action": "Escalate",
+            "draft": "To change a shipping address, please call Apple Support immediately at 1-800-APL-CARE (1-800-275-2273) \u2014 address changes can sometimes be done if the order hasn't been packed yet.",
+            "reason": "Urgent or high-stakes language detected. A human specialist will provide priority assistance."
         }
     ]
 }
