@@ -2,7 +2,7 @@
 
 > **Built for the Hiver AI Challenge.** A production-ready AI support agent trained on real customer–brand Twitter conversations that classifies intent, routes tickets intelligently, and drafts contextually grounded replies — with a full evaluation harness to prove it works.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://hiver-ai-support-agent.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://hiver-ai-support-agent-olive.vercel.app)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.1-lightgrey?logo=flask)](https://flask.palletsprojects.com)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9-orange?logo=scikitlearn)](https://scikit-learn.org)
@@ -163,7 +163,7 @@ python evaluate.py
 
 The agent is deployed on Vercel at:
 
-**[https://hiver-ai-support-agent.vercel.app](https://hiver-ai-support-agent.vercel.app)**
+**[https://hiver-ai-support-agent-olive.vercel.app](https://hiver-ai-support-agent-olive.vercel.app)**
 
 ### Try these sample queries:
 - *"My iPhone battery drains completely by noon since the iOS 17 update"*

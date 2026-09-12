@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "hiver-ai-support-agent",
   "builds": [
     {
       "src": "api/index.py",

@@ -53,3 +53,4 @@ coverage.xml
 # ── Data (large CSVs — kept in repo for demo, but gitignore raw unlabelled) ───
 data/*_unlabelled.csv
 data/raw/
+.vercel
