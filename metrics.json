@@ -1,0 +1,56 @@
+{
+    "metrics": {
+        "Intent_Accuracy": 1.0,
+        "Routing_Accuracy": 0.907,
+        "Baseline_Trivial_Routing_Accuracy": 0.44,
+        "Avg_LLM_Judge_Reply_Score_out_of_5": 2.67,
+        "Total_Evaluated": 150
+    },
+    "top_failures": [
+        {
+            "user_text": "Ever since the iOS 16 update, my phone keeps freezing.",
+            "true_intent": "software_bug",
+            "pred_intent": "software_bug",
+            "true_action": "Escalate",
+            "pred_action": "Auto-handle",
+            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
+            "reason": "Standard software troubleshooting applies."
+        },
+        {
+            "user_text": "Safari keeps crashing when I open a new tab.",
+            "true_intent": "software_bug",
+            "pred_intent": "software_bug",
+            "true_action": "Escalate",
+            "pred_action": "Auto-handle",
+            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
+            "reason": "Standard software troubleshooting applies."
+        },
+        {
+            "user_text": "The weather app is just showing a blank screen.",
+            "true_intent": "software_bug",
+            "pred_intent": "software_bug",
+            "true_action": "Escalate",
+            "pred_action": "Auto-handle",
+            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
+            "reason": "Standard software troubleshooting applies."
+        },
+        {
+            "user_text": "My alarm didn't go off this morning! This bug is horrible.",
+            "true_intent": "software_bug",
+            "pred_intent": "software_bug",
+            "true_action": "Escalate",
+            "pred_action": "Auto-handle",
+            "draft": "We can definitely help with that. Are you currently running the latest iOS version?",
+            "reason": "Standard software troubleshooting applies."
+        },
+        {
+            "user_text": "Ever since the iOS 16 update, my phone keeps freezing.",
+            "true_intent": "software_bug",
+            "pred_intent": "software_bug",
+            "true_action": "Escalate",
+            "pred_action": "Auto-handle",
+            "draft": "We've got your back. Send us a DM with any error messages you are seeing.",
+            "reason": "Standard software troubleshooting applies."
+        }
+    ]
+}

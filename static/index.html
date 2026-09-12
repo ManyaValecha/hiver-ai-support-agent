@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiver AI Support Agent — AppleSupport Demo</title>
+    <meta name="description" content="AI-powered customer support agent built on real Twitter data. Classifies intent, routes tickets, and drafts replies grounded in historical brand responses.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design Tokens ─────────────────────────────────────────────────── */
+        :root {
+            --bg:          #080c14;
+            --surface:     #0f172a;
+            --surface-2:   #1a2236;
+            --surface-3:   #243047;
+            --glass:       rgba(255,255,255,0.04);
+            --border:      rgba(255,255,255,0.07);
+            --border-hover:rgba(255,255,255,0.15);
+
+            --blue:   #3b82f6;
+            --blue-d: #2563eb;
+            --purple: #8b5cf6;
+            --green:  #10b981;
+            --red:    #ef4444;
+            --amber:  #f59e0b;
+            --cyan:   #06b6d4;
+
+            --text:      #f1f5f9;
+            --text-2:    #94a3b8;
+            --text-3:    #475569;
+
+            --radius:    16px;
+            --radius-sm: 10px;
+        }
+
+        /* ── Reset ─────────────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ── Top nav bar ───────────────────────────────────────────────────── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 28px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            gap: 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(59,130,246,0.35);
+            flex-shrink: 0;
+        }
+
+        .brand-text h1 {
+            font-size: 1rem; font-weight: 700;
+            background: linear-gradient(90deg, #fff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        .brand-text p {
+            font-size: 0.7rem; color: var(--text-2); margin-top: 2px;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+
+        .nav-pills {
+            display: flex; gap: 8px;
+        }
+        .nav-pill {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.75rem; color: var(--text-2);
+            cursor: default;
+            transition: all 0.2s;
+        }
+        .nav-pill .dot-live {
+            width: 6px; height: 6px;
+            border-radius: 50%; background: var(--green);
+            animation: pulse-live 2s infinite;
+        }
+        @keyframes pulse-live {
+            0%,100%{opacity:1;} 50%{opacity:0.3;}
+        }
+
+        /* ── Main layout ───────────────────────────────────────────────────── */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── Chat column ───────────────────────────────────────────────────── */
+        .chat-col {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            border-right: 1px solid var(--border);
+        }
+
+        /* Suggested queries bar */
+        .suggestions {
+            display: flex; gap: 8px; padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            background: var(--surface);
+            flex-shrink: 0;
+        }
+        .suggestions::-webkit-scrollbar { display: none; }
+
+        .suggestion-chip {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.72rem; color: var(--text-2);
+            cursor: pointer; white-space: nowrap;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .suggestion-chip:hover {
+            border-color: var(--blue);
+            color: var(--text);
+            background: rgba(59,130,246,0.08);
+        }
+
+        /* Messages area */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            scroll-behavior: smooth;
+        }
+        .messages::-webkit-scrollbar { width: 4px; }
+        .messages::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+        }
+
+        /* ── Message bubbles ───────────────────────────────────────────────── */
+        .msg-wrap {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: msg-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes msg-in {
+            from { opacity:0; transform: translateY(12px) scale(0.97); }
+            to   { opacity:1; transform: translateY(0)   scale(1); }
+        }
+        .msg-wrap.user { align-self: flex-end; }
+        .msg-wrap.agent { align-self: flex-start; }
+
+        .msg-bubble {
+            padding: 13px 18px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .msg-bubble a {
+            color: #60a5fa;
+            text-decoration: underline;
+            text-decoration-color: rgba(96,165,250,0.4);
+            text-underline-offset: 3px;
+            word-break: break-all;
+        }
+        .msg-bubble a:hover { text-decoration-color: #60a5fa; }
+
+        .user .msg-bubble {
+            background: linear-gradient(135deg, var(--blue), var(--blue-d));
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 4px 20px rgba(59,130,246,0.25);
+        }
+        .agent .msg-bubble {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 5px;
+        }
+
+        /* Welcome message style */
+        .welcome-msg .msg-bubble {
+            background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(59,130,246,0.08));
+            border: 1px solid rgba(139,92,246,0.25);
+        }
+
+        /* ── Intent / Routing pill row ─────────────────────────────────────── */
+        .msg-meta {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 7px;
+        }
+        .msg-meta.user { justify-content: flex-end; }
+
+        .pill {
+            display: flex; align-items: center; gap: 5px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 0.68rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .pill-escalate { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .pill-auto     { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+        .pill-intent   { background: rgba(99,102,241,0.12); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+
+        /* ── Reasoning line ────────────────────────────────────────────────── */
+        .msg-reason {
+            font-size: 0.72rem;
+            color: var(--text-3);
+            margin-top: 7px;
+            padding-left: 12px;
+            border-left: 2px solid var(--border);
+            line-height: 1.5;
+        }
+
+        /* ── Confidence meter ──────────────────────────────────────────────── */
+        .conf-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: 8px;
+        }
+        .conf-label { font-size: 0.68rem; color: var(--text-3); flex-shrink: 0; }
+        .conf-bar {
+            flex: 1; height: 4px;
+            background: var(--surface-3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .conf-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .conf-pct { font-size: 0.68rem; color: var(--text-2); font-weight: 600; flex-shrink: 0; }
+
+        /* ── Typing indicator ──────────────────────────────────────────────── */
+        .typing {
+            display: none;
+            align-self: flex-start;
+            padding: 14px 18px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+        }
+        .typing.show { display: block; }
+        .typing-dot {
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--text-3);
+            animation: bounce-dot 1.4s infinite ease-in-out both;
+            margin-right: 3px;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dot:nth-child(3) { margin-right:0; }
+        @keyframes bounce-dot {
+            0%,80%,100%{ transform: scale(0); opacity:0.4; }
+            40%        { transform: scale(1); opacity:1; }
+        }
+
+        /* ── Input bar ─────────────────────────────────────────────────────── */
+        .input-bar {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .input-wrap {
+            flex: 1;
+            position: relative;
+        }
+        .input-wrap input {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 13px 18px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrap input::placeholder { color: var(--text-3); }
+        .input-wrap input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        .send-btn {
+            padding: 0 22px;
+            background: linear-gradient(135deg, var(--blue), var(--blue-d));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+            white-space: nowrap;
+        }
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+        }
+        .send-btn:active { transform: translateY(0); }
+        .send-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+        /* ── Right panel (Inspector) ───────────────────────────────────────── */
+        .inspector {
+            width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .inspector-header {
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            flex-shrink: 0;
+        }
+        .inspector-header h2 {
+            font-size: 0.8rem; font-weight: 600;
+            color: var(--text-2);
+            text-transform: uppercase; letter-spacing: 0.07em;
+        }
+
+        .inspector-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .inspector-body::-webkit-scrollbar { width: 4px; }
+        .inspector-body::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+        }
+
+        /* ── Inspector placeholder ─────────────────────────────────────────── */
+        .inspector-placeholder {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100%;
+            gap: 12px;
+            color: var(--text-3);
+            text-align: center;
+            padding: 24px;
+        }
+        .inspector-placeholder .placeholder-icon {
+            font-size: 2.5rem;
+            opacity: 0.3;
+        }
+        .inspector-placeholder p { font-size: 0.8rem; line-height: 1.5; }
+
+        /* ── Inspector sections ────────────────────────────────────────────── */
+        .inspector-section {
+            margin-bottom: 16px;
+        }
+        .inspector-section h3 {
+            font-size: 0.68rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.07em;
+            color: var(--text-3);
+            margin-bottom: 10px;
+        }
+
+        /* Routing card */
+        .routing-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+        }
+        .routing-action {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 10px;
+        }
+        .action-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .action-icon.escalate { background: rgba(239,68,68,0.15); }
+        .action-icon.auto     { background: rgba(16,185,129,0.15); }
+        .action-label {
+            font-size: 0.85rem; font-weight: 700;
+        }
+        .action-label.escalate { color: #fca5a5; }
+        .action-label.auto     { color: #6ee7b7; }
+        .action-desc {
+            font-size: 0.75rem; color: var(--text-2);
+            line-height: 1.5;
+        }
+
+        /* Top-3 intents */
+        .intent-bar-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px;
+        }
+        .intent-bar-label {
+            font-size: 0.72rem; color: var(--text-2);
+            width: 140px; flex-shrink: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .intent-bar-track {
+            flex: 1; height: 6px;
+            background: var(--surface-3);
+            border-radius: 10px; overflow: hidden;
+        }
+        .intent-bar-fill {
+            height: 100%; border-radius: 10px;
+        }
+        .intent-bar-pct {
+            font-size: 0.68rem; color: var(--text-2);
+            font-weight: 600; width: 34px; text-align: right; flex-shrink: 0;
+        }
+
+        /* Similar cases */
+        .similar-case {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .similar-case-q {
+            font-size: 0.75rem; color: var(--text);
+            line-height: 1.4; margin-bottom: 6px;
+        }
+        .similar-case-a {
+            font-size: 0.72rem; color: var(--text-2);
+            line-height: 1.4;
+        }
+        .similar-case-a a {
+            color: #60a5fa;
+            text-decoration: underline;
+            text-decoration-color: rgba(96,165,250,0.4);
+            word-break: break-all;
+        }
+        .similar-score {
+            font-size: 0.65rem; color: var(--text-3);
+            margin-top: 6px;
+        }
+
+        /* Stats strip */
+        .stats-strip {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 8px; margin-top: 4px;
+        }
+        .stat-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-val {
+            font-size: 1.3rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-lbl {
+            font-size: 0.65rem; color: var(--text-3);
+            margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        /* ── Responsive: hide inspector on small screens ───────────────────── */
+        @media (max-width: 760px) {
+            .inspector { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Top Bar ─────────────────────────────────────────────────────────────── -->
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-logo">✦</div>
+        <div class="brand-text">
+            <h1>Hiver Support AI</h1>
+            <p>AppleSupport · Twitter Dataset</p>
+        </div>
+    </div>
+    <div class="nav-pills">
+        <div class="nav-pill">
+            <div class="dot-live"></div>
+            Live
+        </div>
+        <div class="nav-pill" id="sampleCount">— samples</div>
+        <div class="nav-pill" id="intentCount">— intents</div>
+    </div>
+</header>
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<div class="main">
+
+    <!-- ── Chat Column ──────────────────────────────────────────────────── -->
+    <div class="chat-col">
+
+        <!-- Suggested queries -->
+        <div class="suggestions" id="suggestions">
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">📱 My iPhone battery drains in 4 hours</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">💳 Charged twice for Apple Music</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">🌐 Safari keeps crashing on iOS 17</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">📦 Order hasn't shipped in a week</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">🔗 AirDrop stopped working suddenly</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">🗑️ I accidentally deleted all my photos</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">❓ Is Apple Pencil 2 compatible with iPad Air 5?</div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages" id="messages">
+            <!-- Welcome message -->
+            <div class="msg-wrap agent welcome-msg">
+                <div class="msg-bubble">
+                    <strong>👋 Welcome to Hiver Support AI!</strong><br><br>
+                    I'm an AI support agent trained on real AppleSupport Twitter conversations. Send me any customer query and I'll:
+                    <ul style="margin-top:8px;padding-left:18px;line-height:2;">
+                        <li>🎯 <strong>Classify</strong> the intent from 7 categories</li>
+                        <li>🚦 <strong>Route</strong> it (Auto-handle or Escalate) with a reason</li>
+                        <li>✍️ <strong>Draft a reply</strong> grounded in historical brand responses</li>
+                    </ul>
+                    <br>Try one of the suggested queries above, or type your own!
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="typing" id="typing">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+        </div>
+
+        <!-- Input bar -->
+        <form class="input-bar" id="chatForm" autocomplete="off">
+            <div class="input-wrap">
+                <input
+                    type="text"
+                    id="msgInput"
+                    placeholder="E.g. My iPhone 15 battery drains completely by noon…"
+                    maxlength="400"
+                    required
+                >
+            </div>
+            <button type="submit" class="send-btn" id="sendBtn">Send ↑</button>
+        </form>
+    </div>
+
+    <!-- ── Inspector Panel ───────────────────────────────────────────────── -->
+    <aside class="inspector">
+        <div class="inspector-header">
+            <h2>⚡ Analysis Inspector</h2>
+        </div>
+        <div class="inspector-body" id="inspectorBody">
+            <div class="inspector-placeholder" id="inspectorPlaceholder">
+                <div class="placeholder-icon">🔍</div>
+                <p>Send a customer query to see the AI's reasoning, confidence scores, routing decision, and similar historical cases here.</p>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<script>
+    // ── State ─────────────────────────────────────────────────────────────────
+    let msgCount = 0;
+    const INTENT_COLORS = {
+        device_hardware_issue: '#f59e0b',
+        software_bug:          '#ef4444',
+        account_billing:       '#8b5cf6',
+        shipping_order:        '#3b82f6',
+        general_inquiry:       '#10b981',
+        connectivity_issue:    '#06b6d4',
+        data_loss_recovery:    '#f43f5e'
+    };
+
+    // ── DOM refs ─────────────────────────────────────────────────────────────
+    const form         = document.getElementById('chatForm');
+    const input        = document.getElementById('msgInput');
+    const messages     = document.getElementById('messages');
+    const typing       = document.getElementById('typing');
+    const inspBody     = document.getElementById('inspectorBody');
+    const inspPlaceholder = document.getElementById('inspectorPlaceholder');
+    const sendBtn      = document.getElementById('sendBtn');
+
+    // ── Bootstrap: fetch health ──────────────────────────────────────────────
+    (async () => {
+        try {
+            const r = await fetch('/api/health');
+            const d = await r.json();
+            document.getElementById('sampleCount').textContent = `${d.training_samples} samples`;
+            document.getElementById('intentCount').textContent  = `${d.intents.length} intents`;
+        } catch(e) {}
+    })();
+
+    // ── Suggestion chips ─────────────────────────────────────────────────────
+    function sendSuggestion(el) {
+        const text = el.textContent.replace(/^[^\w]+/, '').trim();
+        input.value = text;
+        form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+    }
+
+    // ── Submit handler ───────────────────────────────────────────────────────
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        appendUserMsg(text);
+        input.value = '';
+        sendBtn.disabled = true;
+
+        typing.classList.add('show');
+        messages.scrollTop = messages.scrollHeight;
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            typing.classList.remove('show');
+
+            const data = await res.json();
+            if (data.error) {
+                appendAgentMsg('⚠️ ' + data.error);
+            } else {
+                appendAgentRich(data);
+                updateInspector(data);
+            }
+        } catch(err) {
+            typing.classList.remove('show');
+            appendAgentMsg('⚠️ Could not reach the server. Is Flask running?');
+        }
+
+        sendBtn.disabled = false;
+        messages.scrollTop = messages.scrollHeight;
+    });
+
+    // ── Append user message ──────────────────────────────────────────────────
+    function appendUserMsg(text) {
+        const wrap = document.createElement('div');
+        wrap.className = 'msg-wrap user';
+        wrap.innerHTML = `<div class="msg-bubble">${esc(text)}</div>`;
+        messages.appendChild(wrap);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    // ── Append plain agent message ───────────────────────────────────────────
+    function appendAgentMsg(text) {
+        const wrap = document.createElement('div');
+        wrap.className = 'msg-wrap agent';
+        wrap.innerHTML = `<div class="msg-bubble">${esc(text)}</div>`;
+        messages.appendChild(wrap);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    // ── Append rich agent response ───────────────────────────────────────────
+    function appendAgentRich(data) {
+        const wrap = document.createElement('div');
+        wrap.className = 'msg-wrap agent';
+
+        const isEscalate = data.action === 'Escalate';
+        const pillClass  = isEscalate ? 'pill-escalate' : 'pill-auto';
+        const actionLabel = isEscalate ? '🔴 Escalate' : '🟢 Auto-handle';
+        const intentColor = INTENT_COLORS[data.intent] || '#94a3b8';
+        const confPct = Math.round(data.confidence * 100);
+        const confColor = confPct >= 70 ? '#10b981' : confPct >= 45 ? '#f59e0b' : '#ef4444';
+
+        // Linkify URLs in the reply text
+        const replyHtml = linkify(esc(data.reply));
+
+        wrap.innerHTML = `
+            <div class="msg-meta">
+                <span class="pill ${pillClass}">${actionLabel}</span>
+                <span class="pill pill-intent" style="color:${intentColor};border-color:${intentColor}40;background:${intentColor}15;">
+                    ${formatIntent(data.intent)}
+                </span>
+            </div>
+            <div class="msg-bubble">${replyHtml}</div>
+            <div class="conf-row">
+                <span class="conf-label">Confidence</span>
+                <div class="conf-bar">
+                    <div class="conf-fill" style="width:${confPct}%;background:${confColor};"></div>
+                </div>
+                <span class="conf-pct">${confPct}%</span>
+            </div>
+            <div class="msg-reason">💬 ${esc(data.reason)}</div>
+        `;
+        messages.appendChild(wrap);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    // ── Update Inspector panel ───────────────────────────────────────────────
+    function updateInspector(data) {
+        if (inspPlaceholder) inspPlaceholder.remove();
+
+        const isEscalate = data.action === 'Escalate';
+        const intentColor = INTENT_COLORS[data.intent] || '#94a3b8';
+
+        // Build top-3 bars
+        const top3Html = (data.top3_intents || []).map((item, i) => {
+            const color = INTENT_COLORS[item.label] || '#94a3b8';
+            const pct = Math.round(item.score * 100);
+            return `
+                <div class="intent-bar-row">
+                    <span class="intent-bar-label" title="${item.label}">${formatIntent(item.label)}</span>
+                    <div class="intent-bar-track">
+                        <div class="intent-bar-fill" style="width:${pct}%;background:${color};"></div>
+                    </div>
+                    <span class="intent-bar-pct">${pct}%</span>
+                </div>
+            `;
+        }).join('');
+
+        // Build similar cases
+        const similarHtml = (data.similar_cases || []).map(c => `
+            <div class="similar-case">
+                <div class="similar-case-q">❝ ${esc(c.query)}</div>
+                <div class="similar-case-a">${linkify(esc(c.response))}</div>
+                <div class="similar-score">Similarity: ${Math.round(c.similarity * 100)}%</div>
+            </div>
+        `).join('');
+
+        inspBody.innerHTML = `
+            <!-- Routing card -->
+            <div class="inspector-section">
+                <h3>Routing Decision</h3>
+                <div class="routing-card">
+                    <div class="routing-action">
+                        <div class="action-icon ${isEscalate ? 'escalate' : 'auto'}">
+                            ${isEscalate ? '🔴' : '🟢'}
+                        </div>
+                        <div>
+                            <div class="action-label ${isEscalate ? 'escalate' : 'auto'}">
+                                ${data.action}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-desc">${esc(data.reason)}</div>
+                </div>
+            </div>
+
+            <!-- Intent breakdown -->
+            <div class="inspector-section">
+                <h3>Intent Scores (Top 3)</h3>
+                ${top3Html}
+            </div>
+
+            <!-- Stats -->
+            <div class="inspector-section">
+                <h3>Classification</h3>
+                <div class="stats-strip">
+                    <div class="stat-card">
+                        <div class="stat-val">${Math.round(data.confidence * 100)}%</div>
+                        <div class="stat-lbl">Confidence</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-val" style="font-size:0.9rem;color:${intentColor};-webkit-text-fill-color:${intentColor};">${formatIntent(data.intent)}</div>
+                        <div class="stat-lbl">Intent</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similar historical cases -->
+            <div class="inspector-section">
+                <h3>📚 Similar Historical Cases</h3>
+                ${similarHtml || '<div style="color:var(--text-3);font-size:0.75rem;">No similar cases found.</div>'}
+            </div>
+        `;
+    }
+
+    // ── Utilities ────────────────────────────────────────────────────────────
+    function esc(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function linkify(html) {
+        // Turn escaped https://... URLs into real <a> tags
+        return html.replace(/https?:\/\/[^\s&lt;"<>]+/g, url => {
+            const decoded = url.replace(/&amp;/g, '&');
+            return `<a href="${decoded}" target="_blank" rel="noopener">${url}</a>`;
+        });
+    }
+
+    function formatIntent(intent) {
+        if (!intent) return '';
+        return intent.replace(/_/g, ' ')
+            .split(' ')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
+    }
+</script>
+</body>
+</html>

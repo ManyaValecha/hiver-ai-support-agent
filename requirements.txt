@@ -1,0 +1,14 @@
+# Hiver AI Support Agent — Python Dependencies
+# Pinned for reproducibility. Tested on Python 3.11+
+
+# Web framework
+flask>=3.1.0,<4.0.0
+
+# ML / NLP
+scikit-learn>=1.9.0,<2.0.0
+numpy>=2.0.0,<3.0.0
+pandas>=3.0.0,<4.0.0
+
+# Optional: LLM-as-Judge evaluation (not required for main app)
+# Uncomment to enable GPT-4o-mini scoring in evaluate.py
+# openai>=1.50.0
