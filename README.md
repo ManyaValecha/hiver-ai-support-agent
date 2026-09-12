@@ -163,7 +163,7 @@ python evaluate.py
 
 The agent is deployed on Vercel at:
 
-**[https://hiver-ai-support-agent.vercel.app](https://hiver-ai-support-agent.vercel.app)**
+**[https://hiver-ai-support-agent-olive.vercel.app/]**
 
 ### Try these sample queries:
 - *"My iPhone battery drains completely by noon since the iOS 17 update"*
