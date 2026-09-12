@@ -14,7 +14,7 @@
 
 This project answers the core challenge question:
 
-> *"Can you turn a messy real-world dataset into a working AI system — and prove it works?"*
+> *"Can you turn a messy real-world dataset into a working AI system  and prove it works?"*
 
 For every incoming customer message, the agent:
 
@@ -22,7 +22,7 @@ For every incoming customer message, the agent:
 |------|-------------|
 | **1. Classify Intent** | Assigns one of 7 fine-grained intents using TF-IDF + Logistic Regression trained on curated AppleSupport Twitter data |
 | **2. Route Decision** | Decides **Auto-handle** or **Escalate** using a rule system combining confidence thresholds, urgency detection, and intent sensitivity |
-| **3. Draft Reply** | Retrieves the most semantically similar historical brand reply using cosine similarity — grounded in real AppleSupport language |
+| **3. Draft Reply** | Retrieves the most semantically similar historical brand reply using cosine similarity  grounded in real AppleSupport language |
 
 ---
 
